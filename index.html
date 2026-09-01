@@ -91,6 +91,12 @@ input.in:focus{outline:none;border-color:var(--amber)}
       <input class="in" id="mTel" placeholder="0532 000 00 00" inputmode="tel">
     </div>
     <div class="fine"><span class="fine-lbl">GİDECEK NUMARA</span><span class="sure" id="telDurum">eksik</span></div>
+    <p class="uyari" id="depoUyari" hidden>Bu tarayıcı bilgiyi saklayamıyor. Aşağıdaki ekip linkini kullan.</p>
+    <div id="linkKutu" hidden>
+      <p class="eyebrow" style="margin-top:14px">EKİBE GÖNDERİLECEK LİNK</p>
+      <div class="pre" id="ekipLink" style="font-size:11px"></div>
+      <button class="copy" id="linkKopyala" style="width:100%;margin-top:8px;padding:12px">linki kopyala</button>
+    </div>
   </div>
 </div>
 
@@ -158,6 +164,12 @@ const TURLER=[["saatlik","Saatlik İzin",1],["yillik","Yıllık İzin",0],["maze
 ["idari","İdari İzin",0],["ucretsiz","Ücretsiz İzin",0]];
 const SAATLER=[7,8,9,10,11,12,13,14,15,16,17,18,19,20];
 const GUNLER=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+
+/* ===== MÜDÜR BİLGİSİ =====
+   Buraya yazarsan uygulamayı açan herkeste hazır gelir, kimse elle girmez.
+   Boş bırakırsan uygulama içinden girilir. */
+const MUDUR_AD_VARSAYILAN  = "";
+const MUDUR_TEL_VARSAYILAN = "";
 
 const S={kisi:null,tur:"saatlik",bas:14,bit:16,basDk:0,bitDk:0,gerekce:"",bildiren:BILDIRENLER[0][0],
   mudurAd:"",mudurTel:"",ayarAcik:false};
@@ -283,6 +295,12 @@ function ciz(){
   $("ayarBlok").hidden=!S.ayarAcik;
   $("telDurum").textContent=tel?"+"+tel:"eksik";
   $("telDurum").style.color=tel.length>=11?"var(--green)":"var(--amber)";
+  const linkVar=tel.length>=11;
+  $("linkKutu").hidden=!linkVar;
+  if(linkVar){
+    $("ekipLink").textContent=location.origin+location.pathname
+      +"?a="+encodeURIComponent(S.mudurAd)+"&t="+encodeURIComponent(S.mudurTel);
+  }
 
   document.querySelectorAll(".kisi").forEach(b=>b.classList.toggle("on",b.dataset.ad===S.kisi));
   $("turler").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.id===S.tur));
@@ -304,10 +322,36 @@ function ciz(){
   $("uyari").textContent=hazir?"":(!S.kisi?"Önce personel seç.":"Müdürün numarası eksik — sağ üstten ekle.");
 }
 
-/* kayıtlı ayarlar */
-S.mudurAd=oku("mudurAd",""); S.mudurTel=oku("mudurTel",""); S.bildiren=oku("bildiren",BILDIRENLER[0][0]);
+/* depolama calisiyor mu */
+let depoVar=true;
+try{localStorage.setItem("__t","1");localStorage.removeItem("__t")}catch(e){depoVar=false}
+
+/* linkten gelen mudur bilgisi > kayitli > varsayilan */
+const P=new URLSearchParams(location.search);
+const pAd=P.get("a"), pTel=P.get("t");
+S.mudurAd  = pAd !==null ? pAd  : oku("mudurAd",  MUDUR_AD_VARSAYILAN);
+S.mudurTel = pTel!==null ? pTel : oku("mudurTel", MUDUR_TEL_VARSAYILAN);
+S.bildiren = oku("bildiren",BILDIRENLER[0][0]);
+if(pAd!==null) yaz("mudurAd",S.mudurAd);
+if(pTel!==null) yaz("mudurTel",S.mudurTel);
+
 $("mAd").value=S.mudurAd; $("mTel").value=S.mudurTel;
-S.ayarAcik=!S.mudurTel;
+$("depoUyari").hidden=depoVar;
+S.ayarAcik=!telTemizle(S.mudurTel);
+
+/* ekrandan cikarken de kaydet - iOS icin */
+function kaydet(){yaz("mudurAd",S.mudurAd);yaz("mudurTel",S.mudurTel);yaz("bildiren",S.bildiren)}
+["blur","change"].forEach(o=>{$("mAd").addEventListener(o,kaydet);$("mTel").addEventListener(o,kaydet)});
+window.addEventListener("pagehide",kaydet);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)kaydet()});
+
+$("linkKopyala").onclick=async()=>{
+  const u=$("ekipLink").textContent;
+  try{await navigator.clipboard.writeText(u);$("linkKopyala").textContent="kopyalandı";
+    setTimeout(()=>$("linkKopyala").textContent="linki kopyala",1800)}
+  catch(e){$("linkKopyala").textContent="linki elle seçip kopyala"}
+};
+
 ciz(); cizGecmis();
 
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
