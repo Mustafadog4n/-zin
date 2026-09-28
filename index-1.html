@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="İzin Bildirim">
+<meta name="theme-color" content="#0E1A21">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<title>İzin Bildirim</title>
+<style>
+:root{
+  --bg:#0E1A21; --panel:#14252E; --panel2:#1B303A; --koyu:#101F27; --koyu2:#0A151B;
+  --line:#27454F; --amber:#F2A33C; --green:#47C79A; --txt:#E8F0F2; --mut:#84A2AD; --pasif:#5C7A85;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg)}
+body{
+  color:var(--txt); font-family:var(--sans); -webkit-font-smoothing:antialiased;
+  padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 40px);
+  max-width:540px; margin:0 auto; overscroll-behavior-y:contain;
+}
+button,input{font-family:inherit;font-size:inherit}
+
+.top{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:9px}
+.led{width:8px;height:8px;border-radius:50%;background:var(--green)}
+h1{margin:0;font-size:17px;font-weight:700;letter-spacing:.09em}
+.ghost{background:none;border:1px solid var(--line);border-radius:5px;color:var(--mut);font-family:var(--mono);font-size:10px;padding:7px 10px}
+
+.eyebrow{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--mut);margin:0 0 9px}
+.eyebrow::after{content:'';flex:1;height:1px;background:var(--line)}
+.block{margin-bottom:22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:12px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.kisi{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:9px 10px;color:var(--txt);font-size:13px;font-weight:500;line-height:1.25}
+.kisi span{display:block;font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:.05em;margin-top:3px}
+.kisi.on{border-color:var(--amber);background:var(--panel2)}
+.kisi.on span{color:var(--amber)}
+
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 30%;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:11px 8px;color:var(--mut);font-size:12px}
+.seg button.on{background:var(--amber);border-color:var(--amber);color:#12212A;font-weight:600}
+
+.ports{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.port{aspect-ratio:1/.85;border:1px solid var(--line);border-radius:4px;background:var(--koyu);color:var(--mut);font-family:var(--mono);font-size:12px;padding:0}
+.port.on{background:var(--amber);border-color:var(--amber);color:#12212A;font-weight:600}
+
+.fine{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+.fine-lbl{color:var(--mut);font-size:10px;letter-spacing:.1em}
+.mini{display:inline-flex;gap:4px;margin-left:6px}
+.mini button{background:var(--koyu);border:1px solid var(--line);border-radius:4px;color:var(--mut);font-family:var(--mono);font-size:10px;padding:5px 7px}
+.mini button.on{background:var(--panel2);color:var(--amber)}
+.sure{color:var(--green)}
+
+input.in{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:12px;color:var(--txt);font-size:16px}
+input.in::placeholder{color:var(--pasif)}
+input.in:focus{outline:none;border-color:var(--amber)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.pre{background:var(--koyu2);border:1px solid var(--line);border-radius:7px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-word;color:#CFE2E7}
+.actions{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}
+.send{background:var(--green);color:#0B1F19;border:0;border-radius:6px;padding:16px;font-size:14px;font-weight:600}
+.send:disabled{background:var(--panel2);color:var(--pasif)}
+.copy{background:var(--panel);border:1px solid var(--line);border-radius:6px;color:var(--mut);font-family:var(--mono);font-size:12px;padding:16px 15px}
+.uyari{color:var(--amber);font-family:var(--mono);font-size:12px;margin:9px 0 0}
+.log{border-top:1px solid var(--line);padding:11px 0}
+.log p{margin:0;font-size:13px}
+.log small{font-family:var(--mono);font-size:10px;color:var(--mut)}
+.bos{color:var(--mut);font-size:13px;margin:0}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand"><div class="led"></div><h1>İZİN BİLDİRİM</h1></div>
+  <button class="ghost" id="ayarBtn">MÜDÜRÜ TANIMLA</button>
+</div>
+
+<div class="block" id="ayarBlok" hidden>
+  <p class="eyebrow">MÜDÜR BİLGİSİ</p>
+  <div class="card">
+    <div class="row2">
+      <input class="in" id="mAd" placeholder="Adı Soyadı">
+      <input class="in" id="mTel" placeholder="0532 000 00 00" inputmode="tel">
+    </div>
+    <div class="fine"><span class="fine-lbl">GİDECEK NUMARA</span><span class="sure" id="telDurum">eksik</span></div>
+    <p class="uyari" id="depoUyari" hidden>Bu tarayıcı bilgiyi saklayamıyor. Aşağıdaki ekip linkini kullan.</p>
+    <div id="linkKutu" hidden>
+      <p class="eyebrow" style="margin-top:14px">EKİBE GÖNDERİLECEK LİNK</p>
+      <div class="pre" id="ekipLink" style="font-size:11px"></div>
+      <button class="copy" id="linkKopyala" style="width:100%;margin-top:8px;padding:12px">linki kopyala</button>
+    </div>
+  </div>
+</div>
+
+<div class="block">
+  <p class="eyebrow">PERSONEL</p>
+  <div class="grid" id="ekip"></div>
+</div>
+
+<div class="block">
+  <p class="eyebrow">İZİN TÜRÜ</p>
+  <div class="seg" id="turler"></div>
+</div>
+
+<div class="block">
+  <p class="eyebrow" id="tarihBaslik">TARİH</p>
+  <div class="row2" id="tarihSatir">
+    <input class="in" type="date" id="tarih">
+    <input class="in" type="date" id="bitisTarih">
+  </div>
+</div>
+
+<div class="block" id="saatBlok">
+  <p class="eyebrow">SAAT ARALIĞI</p>
+  <div class="card">
+    <div class="ports" id="ports"></div>
+    <div class="fine">
+      <div><span class="fine-lbl">BAŞ</span><span class="mini" id="dkBas"></span></div>
+      <div><span class="fine-lbl">BİT</span><span class="mini" id="dkBit"></span></div>
+      <span class="sure" id="saatOzet"></span>
+    </div>
+  </div>
+</div>
+
+<div class="block">
+  <p class="eyebrow">BİLDİREN YÖNETİCİ</p>
+  <div class="seg" id="bildirenler"></div>
+</div>
+
+<div class="block">
+  <p class="eyebrow">GEREKÇE · İSTEĞE BAĞLI</p>
+  <input class="in" id="gerekce" placeholder="Örn. resmi işlem, aile">
+</div>
+
+<div class="block">
+  <p class="eyebrow">GİDECEK MESAJ</p>
+  <div class="pre" id="onizleme"></div>
+  <div class="actions">
+    <button class="send" id="gonder">WhatsApp'ta aç ve gönder</button>
+    <button class="copy" id="kopyala">kopyala</button>
+  </div>
+  <p class="uyari" id="uyari"></p>
+</div>
+
+<div class="block">
+  <p class="eyebrow">SON BİLDİRİMLER</p>
+  <div id="gecmis"></div>
+</div>
+
+<script>
+const EKIP=[["Macit Özeri",""],["Muharrem Kılıç",""],["Zafer Karaman",""],["Yunus Emre Bektaş",""],
+["Tolga Gürakar",""],["Zeynep Dönmez Oğhan",""],["Havva Özden Gültekin",""],["Asım Civan",""],
+["Alper Çakal","UZMAN MÜHENDİS"],["Çisem Koçgürbüz","KIDEMLİ MÜHENDİS"],["Mustafa Doğan","MÜHENDİS"]];
+const BILDIRENLER=[["Çisem Koçgürbüz","Kıdemli Mühendis"],["Alper Çakal","Uzman Mühendis"]];
+const TURLER=[["saatlik","Saatlik İzin",1],["yillik","Yıllık İzin",0],["mazeret","Mazeret İzni",0],
+["idari","İdari İzin",0],["ucretsiz","Ücretsiz İzin",0]];
+const SAATLER=[7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+const GUNLER=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+
+/* ===== MÜDÜR BİLGİSİ =====
+   Buraya yazarsan uygulamayı açan herkeste hazır gelir, kimse elle girmez.
+   Boş bırakırsan uygulama içinden girilir. */
+const MUDUR_AD_VARSAYILAN  = "";
+const MUDUR_TEL_VARSAYILAN = "";
+
+const S={kisi:null,tur:"saatlik",bas:14,bit:16,basDk:0,bitDk:0,gerekce:"",bildiren:BILDIRENLER[0][0],
+  mudurAd:"",mudurTel:"",ayarAcik:false};
+
+const $=id=>document.getElementById(id);
+const oku=(k,v)=>{try{const x=localStorage.getItem(k);return x===null?v:JSON.parse(x)}catch(e){return v}};
+const yaz=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+
+function bugun(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function coz(s){if(!s)return null;const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function trTarih(s){const d=coz(s);if(!d||isNaN(d))return"";
+  return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear()+" "+GUNLER[d.getDay()]}
+function ss(h,m){return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")}
+function telTemizle(r){let n=(r||"").replace(/\D/g,"");if(n.startsWith("00"))n=n.slice(2);
+  if(n.startsWith("0"))n="90"+n.slice(1);else if(n.length===10&&n.startsWith("5"))n="90"+n;return n}
+function turBul(){return TURLER.find(t=>t[0]===S.tur)}
+function saatli(){return turBul()[2]===1}
+
+function sure(){const dk=(S.bit*60+S.bitDk)-(S.bas*60+S.basDk);if(dk<=0)return"—";
+  const s=Math.floor(dk/60),k=dk%60;return k?s+" sa "+k+" dk":s+" saat"}
+function gunSayisi(){const a=coz($("tarih").value),b=coz($("bitisTarih").value);
+  if(!a||!b)return 1;return Math.max(1,Math.round((b-a)/86400000)+1)}
+
+function mesaj(){
+  const t=turBul(),b=BILDIRENLER.find(x=>x[0]===S.bildiren);
+  let m="*İZİN BİLDİRİMİ*\n\n";
+  m+="*Personel:* "+(S.kisi||"—")+"\n";
+  m+="*İzin Türü:* "+t[1]+"\n";
+  if(saatli()){
+    m+="*Tarih:* "+trTarih($("tarih").value)+"\n";
+    m+="*Saat:* "+ss(S.bas,S.basDk)+" - "+ss(S.bit,S.bitDk)+"  ("+sure()+")\n";
+  }else{
+    const g=gunSayisi();
+    m+= g>1 ? "*Tarih:* "+trTarih($("tarih").value)+" - "+trTarih($("bitisTarih").value)+"  ("+g+" gün)\n"
+            : "*Tarih:* "+trTarih($("tarih").value)+"  (1 gün)\n";
+  }
+  if(S.gerekce.trim())m+="*Gerekçe:* "+S.gerekce.trim()+"\n";
+  m+="\nBilgilerinize arz ederim.\n";
+  m+="*Bildiren:* "+(b?b[0]+" / "+b[1]:S.bildiren);
+  return m;
+}
+
+/* --- kurulum --- */
+EKIP.forEach(([ad,unvan])=>{
+  const b=document.createElement("button");
+  b.className="kisi"; b.dataset.ad=ad;
+  b.innerHTML=ad+(unvan?"<span>"+unvan+"</span>":"");
+  b.onclick=()=>{S.kisi=ad;ciz()};
+  $("ekip").appendChild(b);
+});
+TURLER.forEach(([id,ad])=>{
+  const b=document.createElement("button");
+  b.dataset.id=id; b.textContent=ad;
+  b.onclick=()=>{S.tur=id;ciz()};
+  $("turler").appendChild(b);
+});
+BILDIRENLER.forEach(([ad])=>{
+  const b=document.createElement("button");
+  b.dataset.ad=ad; b.textContent=ad;
+  b.onclick=()=>{S.bildiren=ad;yaz("bildiren",ad);ciz()};
+  $("bildirenler").appendChild(b);
+});
+SAATLER.forEach(h=>{
+  const b=document.createElement("button");
+  b.className="port"; b.dataset.h=h; b.textContent=String(h).padStart(2,"0");
+  b.onclick=()=>{
+    if(S.bit-S.bas>1){S.bas=h;S.bit=h+1;S.basDk=0;S.bitDk=0}
+    else if(h<S.bas)S.bas=h;
+    else if(h>=S.bit)S.bit=h+1;
+    else{S.bas=h;S.bit=h+1}
+    ciz();
+  };
+  $("ports").appendChild(b);
+});
+[["dkBas","basDk"],["dkBit","bitDk"]].forEach(([kap,alan])=>{
+  [0,30].forEach(d=>{
+    const b=document.createElement("button");
+    b.dataset.d=d; b.textContent=":"+String(d).padStart(2,"0");
+    b.onclick=()=>{S[alan]=d;ciz()};
+    $(kap).appendChild(b);
+  });
+});
+
+$("tarih").value=bugun();
+$("bitisTarih").value=bugun();
+$("tarih").onchange=()=>{if($("tarih").value>$("bitisTarih").value)$("bitisTarih").value=$("tarih").value;ciz()};
+$("bitisTarih").onchange=ciz;
+$("gerekce").oninput=e=>{S.gerekce=e.target.value;ciz()};
+$("ayarBtn").onclick=()=>{S.ayarAcik=!S.ayarAcik;ciz()};
+$("mAd").oninput=e=>{S.mudurAd=e.target.value;yaz("mudurAd",S.mudurAd);ciz()};
+$("mTel").oninput=e=>{S.mudurTel=e.target.value;yaz("mudurTel",S.mudurTel);ciz()};
+
+$("gonder").onclick=()=>{
+  const tel=telTemizle(S.mudurTel);
+  kayitEkle();
+  window.location.href="https://wa.me/"+tel+"?text="+encodeURIComponent(mesaj());
+};
+$("kopyala").onclick=async()=>{
+  try{await navigator.clipboard.writeText(mesaj());$("kopyala").textContent="kopyalandı";
+    setTimeout(()=>$("kopyala").textContent="kopyala",1800)}catch(e){}
+};
+
+function kayitEkle(){
+  const ozet=saatli()
+    ? trTarih($("tarih").value)+" · "+ss(S.bas,S.basDk)+"-"+ss(S.bit,S.bitDk)
+    : (gunSayisi()>1 ? trTarih($("tarih").value)+" → "+trTarih($("bitisTarih").value) : trTarih($("tarih").value));
+  const yeni=[{kisi:S.kisi,tur:turBul()[1],ozet}].concat(oku("log",[])).slice(0,12);
+  yaz("log",yeni);
+  setTimeout(cizGecmis,50);
+}
+
+function cizGecmis(){
+  const liste=oku("log",[]),k=$("gecmis");
+  k.innerHTML = liste.length===0
+    ? '<p class="bos">Henüz bildirim yok. İlk izni gönderdiğinde burada listelenir.</p>'
+    : liste.map(x=>'<div class="log"><p>'+x.kisi+'</p><small>'+x.tur+' · '+x.ozet+'</small></div>').join("");
+}
+
+function ciz(){
+  const tel=telTemizle(S.mudurTel), hazir=!!S.kisi&&tel.length>=11, sa=saatli();
+
+  $("ayarBtn").textContent=S.mudurAd?("MÜDÜR: "+S.mudurAd.toLocaleUpperCase("tr")):"MÜDÜRÜ TANIMLA";
+  $("ayarBlok").hidden=!S.ayarAcik;
+  $("telDurum").textContent=tel?"+"+tel:"eksik";
+  $("telDurum").style.color=tel.length>=11?"var(--green)":"var(--amber)";
+  const linkVar=tel.length>=11;
+  $("linkKutu").hidden=!linkVar;
+  if(linkVar){
+    $("ekipLink").textContent=location.origin+location.pathname
+      +"?a="+encodeURIComponent(S.mudurAd)+"&t="+encodeURIComponent(S.mudurTel);
+  }
+
+  document.querySelectorAll(".kisi").forEach(b=>b.classList.toggle("on",b.dataset.ad===S.kisi));
+  $("turler").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.id===S.tur));
+  $("bildirenler").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.ad===S.bildiren));
+  $("ports").querySelectorAll("button").forEach(b=>{
+    const h=+b.dataset.h; b.classList.toggle("on",h>=S.bas&&h<S.bit);
+  });
+  $("dkBas").querySelectorAll("button").forEach(b=>b.classList.toggle("on",+b.dataset.d===S.basDk));
+  $("dkBit").querySelectorAll("button").forEach(b=>b.classList.toggle("on",+b.dataset.d===S.bitDk));
+
+  $("tarihBaslik").textContent=sa?"TARİH":"TARİH ARALIĞI";
+  $("bitisTarih").hidden=sa;
+  $("tarihSatir").style.gridTemplateColumns=sa?"1fr":"1fr 1fr";
+  $("saatBlok").hidden=!sa;
+  $("saatOzet").textContent=ss(S.bas,S.basDk)+" → "+ss(S.bit,S.bitDk)+" · "+sure();
+
+  $("onizleme").textContent=mesaj();
+  $("gonder").disabled=!hazir;
+  $("uyari").textContent=hazir?"":(!S.kisi?"Önce personel seç.":"Müdürün numarası eksik — sağ üstten ekle.");
+}
+
+/* depolama calisiyor mu */
+let depoVar=true;
+try{localStorage.setItem("__t","1");localStorage.removeItem("__t")}catch(e){depoVar=false}
+
+/* linkten gelen mudur bilgisi > kayitli > varsayilan */
+const P=new URLSearchParams(location.search);
+const pAd=P.get("a"), pTel=P.get("t");
+S.mudurAd  = pAd !==null ? pAd  : oku("mudurAd",  MUDUR_AD_VARSAYILAN);
+S.mudurTel = pTel!==null ? pTel : oku("mudurTel", MUDUR_TEL_VARSAYILAN);
+S.bildiren = oku("bildiren",BILDIRENLER[0][0]);
+if(!BILDIRENLER.some(b=>b[0]===S.bildiren)){S.bildiren=BILDIRENLER[0][0];yaz("bildiren",S.bildiren)}
+if(pAd!==null) yaz("mudurAd",S.mudurAd);
+if(pTel!==null) yaz("mudurTel",S.mudurTel);
+
+$("mAd").value=S.mudurAd; $("mTel").value=S.mudurTel;
+$("depoUyari").hidden=depoVar;
+S.ayarAcik=!telTemizle(S.mudurTel);
+
+/* ekrandan cikarken de kaydet - iOS icin */
+function kaydet(){yaz("mudurAd",S.mudurAd);yaz("mudurTel",S.mudurTel);yaz("bildiren",S.bildiren)}
+["blur","change"].forEach(o=>{$("mAd").addEventListener(o,kaydet);$("mTel").addEventListener(o,kaydet)});
+window.addEventListener("pagehide",kaydet);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)kaydet()});
+
+$("linkKopyala").onclick=async()=>{
+  const u=$("ekipLink").textContent;
+  try{await navigator.clipboard.writeText(u);$("linkKopyala").textContent="kopyalandı";
+    setTimeout(()=>$("linkKopyala").textContent="linki kopyala",1800)}
+  catch(e){$("linkKopyala").textContent="linki elle seçip kopyala"}
+};
+
+ciz(); cizGecmis();
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+</script>
+</body>
+</html>
